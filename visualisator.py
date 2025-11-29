@@ -1,29 +1,52 @@
+import tkinter
 import serial
-import numpy as np 
-import matplotlib.pyplot as plt 
 
-# interactive mode on
-plt.ion()
+from matplotlib.backends.backend_tkagg import (
+    FigureCanvasTkAgg, NavigationToolbar2Tk)
+from matplotlib.backend_bases import key_press_handler
+from matplotlib.figure import Figure
+
+
+
+root = tkinter.Tk()
+root.wm_title("Sensor View")
+
+fig = Figure(figsize=(5, 4), dpi=100)
 
 measurements = [1, 2, 3]
 meas2 = [2, 4, 6]
 timestamps = [1, 2, 3]
 
-plt.title("Szenzorok") 
-plt.xlabel("idő") 
-plt.ylabel("hőmérséklet") 
+subplot = fig.add_subplot(111)
+subplot.set_xlabel("idő (s)")
+subplot.set_ylabel("hőmérséklet (C)")
+subplot.set_title("szenzorok")
+subplot.plot(timestamps, measurements)
+subplot.plot(timestamps, meas2)
 
-line1, = plt.plot(timestamps, measurements, color="#500")
-line2, = plt.plot(timestamps, meas2, color="#0F0")
+canvas = FigureCanvasTkAgg(fig, master=root)
+canvas.draw()
+canvas.get_tk_widget().pack(side=tkinter.TOP, fill=tkinter.BOTH, expand=1)
 
-for i in range(4, 100):
-    measurements.append(i)
-    meas2.append(i*2)
-    timestamps.append(i)
+toolbar = NavigationToolbar2Tk(canvas, root)
+toolbar.update()
+canvas.get_tk_widget().pack(side=tkinter.TOP, fill=tkinter.BOTH, expand=1)
 
-    line1.remove()
-    line2.remove()
-    line1, = plt.plot(timestamps, measurements, color="#500")
-    line2, = plt.plot(timestamps, meas2, color="#0F0")
 
-    plt.pause(0.25)
+def on_key_press(event):
+    print("you pressed {}".format(event.key))
+    key_press_handler(event, canvas, toolbar)
+
+
+canvas.mpl_connect("key_press_event", on_key_press)
+
+
+def _quit():
+    root.quit()
+    root.destroy()
+
+
+button = tkinter.Button(master=root, text="Quit", command=_quit)
+button.pack(side=tkinter.BOTTOM)
+
+tkinter.mainloop()
