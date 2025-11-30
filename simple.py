@@ -53,7 +53,7 @@ while True:
 
         for i, raw in enumerate(values[2:-1]):
             sensor_name = sensors[i]
-            measurement_value = float(raw)
+            measurement_value = float(raw[:-1])
             measurements[sensor_name].append(measurement_value)
         
         timestamps.append(int(values[1]))
