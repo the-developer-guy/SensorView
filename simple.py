@@ -5,10 +5,14 @@ import matplotlib.pyplot as plt
 # interactive mode on
 plt.ion()
 
-colors = ["#C00", "#0C0", "#00C", "#CC0", "#C0C", "#0CC", "#000"]
+colors = ["#AF0", "#A0F", "#0AF", "#FA0", "#F0A", "#0FA", 
+          "#A00", "#0A0", "#00A", "#AA0", "#A0A", "#0AA", 
+          "#F00", "#0F0", "#00F", "#FF0", "#F0F", "#0FF", 
+          "#000"]
 
 measurements = {}
 sensors = []
+sensor_colors = {}
 timestamps = []
 plots = []
 
@@ -22,12 +26,13 @@ sensor_port = serial.Serial("/dev/cu.usbmodem2101", 115200, timeout=0)
 line = sensor_port.readline()
 while line != b"":
     raw_measurement = line.decode("utf-8").strip()
-    values = raw_measurement.split(";")
-    if values[0] == "name":
+    values = raw_measurement.split("\t")
+    if values[0] == "nr" and values[1] == "time":
         sensors = values[2:-1]
         print("Sensors: ", sensors)
         for sensor in sensors:
             measurements[sensor] = []
+            sensor_colors[sensor] = colors.pop()
         break
     time.sleep(0.1)
     line = sensor_port.readline()
@@ -36,10 +41,10 @@ while True:
     line = sensor_port.readline()
     while line != b"":
         raw_measurement = line.decode("utf-8").strip()
-        values = raw_measurement.split(";")
+        values = raw_measurement.split("\t")
 
         # skip header
-        if values[0] == "name":
+        if values[0] == "nr" and values[1] == "time":
             continue
 
         for plot in plots:
@@ -56,7 +61,7 @@ while True:
         for sensor in sensors:
             current_measurements = measurements[sensor]
             timestamps = [meas["timestamp"] for meas in current_measurements]
-            p, = plt.plot(timestamps, current_measurements)
+            p, = plt.plot(timestamps, current_measurements, color=sensor_colors[sensor])
             plots.append(p)
 
         line = sensor_port.readline()
